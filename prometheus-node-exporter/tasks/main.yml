@@ -37,6 +37,7 @@
     dest: "{{ prometheus_node_exporter_work_dir }}"
     owner: "{{ prometheus_node_exporter_user }}"
     group: "{{ prometheus_node_exporter_user_group }}" 
+    mode: a+x
 
 - name: "create systemd service unit"
   template:
@@ -49,7 +50,7 @@
   #  notify:
   # - restart node exporter
 
-- name: Looking which version of upstart is install
+- name: Looking which version of upstart is installed
   command: initctl version
   when: service_mgr | default(ansible_service_mgr) == 'upstart'
   register: upstart_version
@@ -63,6 +64,19 @@
     group: root
     mode: 0644
   when: service_mgr | default(ansible_service_mgr) == 'upstart'
+
+- name: "Create sysvinit service unit"
+  template:
+    src: etc/init.d/prometheus_node_exporter.j2
+    dest: /etc/init.d/node_exporter
+    owner: root
+    group: root
+    mode: 0755
+  when: service_mgr | default(ansible_service_mgr) in [ 'sysvinit', 'service' ]
+  notify:
+    - restart node exporter
+
+- meta: flush_handlers
 
 - name: ensure prometheus node exporter service is enabled and started
   service:

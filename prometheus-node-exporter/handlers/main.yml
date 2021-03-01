@@ -1,2 +1,12 @@
 ---
 # handlers file for prometheus-node-exporter
+- name: reenable node exporter service
+  command: systemctl reenable node_exporter.service #prometheus-node-exporter.service
+
+- name: reinit node exporter
+  command: initctl reload-configuration
+
+- name: restart node exporter
+  service:
+    name: node_exporter
+    state: restarted

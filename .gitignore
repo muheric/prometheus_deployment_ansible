@@ -1,3 +1,2 @@
-host-ids
-hosts
-ssh-copy-id.sh
+prometheus.yml
+secret.yml
