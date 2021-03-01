@@ -1,0 +1,38 @@
+[Unit]
+
+Description=Prometheus Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+
+Type=simple
+User={{prometheus_node_exporter_user}}
+Group={{prometheus_node_exporter_user_group}}
+ExecStart={{ prometheus_node_exporter_work_dir}}/node_exporter {% for collector in prometheus_node_exporter_enabled_collectors %}--collector.{{ collector }} {% endfor %} {% for collector in prometheus_node_exporter_disabled_collectors %}--no-collector.{{ collector }} {% endfor %} {% for flag, flag_value in prometheus_node_exporter_config_flags.items() %}--{{ flag }}={{ flag_value }} {% endfor %}
+
+
+
+SyslogIdentifier=node_exporter
+Restart=always
+
+[Install]
+
+WantedBy=multi-user.target
+
+# defaults file for prometheus-node-exporter
+#prometheus_node_exporter_user: node_exporter
+#prometheus_node_exporter_user_group: node_exporter
+#prometheus_node_exporter_temp_dir: /tmp
+#prometheus_node_exporter_root_dir: /etc/prometheus/node_exporter
+
+#version: 1.1.1
+#prometheus_node_exporter_release_name: node_exporter-{{ version }}.linux-amd64
+#prometheus_node_exporter_binaries: "{{prometheus_node_exporter_release_name}}"
+#prometheus_node_exporter_work_dir: /usr/local/bin
+#node_exporter_download_url: https://github.com/prometheus/node_exporter/releases/download/v{{version}}/node_exporter-{{version}}.linux-amd64.tar.gz
+
+#prometheus_node_exporter_config_flags:
+ # 'web.listen-address': '0.0.0.0:9100'
+#  'log.level': 'info'
+

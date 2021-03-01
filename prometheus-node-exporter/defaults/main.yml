@@ -1,0 +1,24 @@
+---
+# defaults file for prometheus-node-exporter
+prometheus_node_exporter_user: node_exporter
+prometheus_node_exporter_user_group: node_exporter
+prometheus_node_exporter_temp_dir: /tmp
+prometheus_node_exporter_root_dir: /etc/prometheus/node_exporter
+
+version: 1.1.1
+prometheus_node_exporter_release_name: node_exporter-{{ version }}.linux-amd64
+prometheus_node_exporter_binaries: "{{prometheus_node_exporter_release_name}}"
+prometheus_node_exporter_work_dir: /usr/local/bin
+node_exporter_download_url: https://github.com/prometheus/node_exporter/releases/download/v{{version}}/node_exporter-{{version}}.linux-amd64.tar.gz
+prometheus_node_exporter_log_dir:  /var/log/prometheus/node_exporter
+# https://github.com/prometheus/node_exporter#enabled-by-default
+prometheus_node_exporter_enabled_collectors: []
+
+# https://github.com/prometheus/node_exporter#disabled-by-default
+prometheus_node_exporter_disabled_collectors: []
+
+
+prometheus_node_exporter_config_flags:
+  'web.listen-address': '0.0.0.0:9100'
+  'log.level': 'info'
+

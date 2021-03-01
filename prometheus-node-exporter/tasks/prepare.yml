@@ -1,0 +1,39 @@
+---
+
+- name: "create the node exporter user group"
+  group:
+    name: "{{ prometheus_node_exporter_user_group}}"
+    system: yes
+    state: present
+
+- name: "Create the node exporter username"
+  user: 
+    name: "{{ prometheus_node_exporter_user }}"
+    group: "{{ prometheus_node_exporter_user_group }}" 
+    state: present
+    create_home: no
+    shell: /sbin/nologin
+
+- name: "Create the directory for the node exporter"
+  file:
+    path: "{{ item }}"   #"{{ prometheus_node_exporter_root_dir }}"
+    state: directory
+    owner:  "{{ prometheus_node_exporter_user }}"
+    group: "{{ prometheus_node_exporter_user_group }}"
+    #recursive: yes
+    mode: '0755'
+  with_items:
+    - "{{ prometheus_node_exporter_log_dir }}"
+    - "{{ prometheus_node_exporter_root_dir }}"
+
+
+
+    #prometheus_node_exporter_user: node_exporter
+    #prometheus_node_exporter_user_group: node_exporter
+    #prometheus_node_exporter_temp_dir: /tmp
+    #prometheus_node_exporter_root_dir: /etc/prometheus/node_exporter
+
+    #version: 1.1.1
+    #prometheus_node_exporter_release_name: node_exporter-{{ version }}.linux-amd64
+    #prometheus_node_exporter_binaries: "{{prometheus_node_exporter_release_name}}"
+    #prometheus_node_exporter_work_dir: /usr/local/bin

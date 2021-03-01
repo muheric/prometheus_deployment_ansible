@@ -1,0 +1,71 @@
+---
+# tasks file for prometheus-node-exporter
+#
+##prometheus_node_exporter_user: node_exporter
+    #prometheus_node_exporter_user_group: node_exporter
+    #prometheus_node_exporter_temp_dir: /tmp
+    #prometheus_node_exporter_root_dir: /etc/prometheus/node_exporter
+
+    #version: 1.1.1
+    #prometheus_node_exporter_release_name: node_exporter-{{ version }}.linux-amd64
+    #prometheus_node_exporter_binaries: "{{prometheus_node_exporter_release_name}}"
+    #prometheus_node_exporter_work_dir: /usr/local/bin
+    #node_exporter_download_url: https://github.com/prometheus/node_exporter/releases/download/v{{version}}/node_exporter-{{version}}.linux-amd64.tar.gz
+- name: "Prepare the environment"
+  include_tasks: prepare.yml
+
+- name: "Download the node exporter"
+  get_url:
+    url: "{{ node_exporter_download_url }}"
+    dest: "{{ prometheus_node_exporter_temp_dir }}/{{ prometheus_node_exporter_release_name}}.tar.gz"
+    owner: "{{ prometheus_node_exporter_user }}"
+    group: "{{ prometheus_node_exporter_user_group }}"
+    validate_certs: false
+
+- name: "Untar the binaries"
+  unarchive:
+    src: "{{ prometheus_node_exporter_temp_dir }}/{{ prometheus_node_exporter_release_name}}.tar.gz"
+    dest: "{{ prometheus_node_exporter_root_dir }}"
+    remote_src: yes
+    owner: "{{ prometheus_node_exporter_user }}"
+    group: "{{ prometheus_node_exporter_user_group }}"
+
+- name: "Move the binary to the appropriate place"
+  copy:
+    src: "{{ prometheus_node_exporter_root_dir }}/{{prometheus_node_exporter_release_name}}/node_exporter"
+    remote_src: yes
+    dest: "{{ prometheus_node_exporter_work_dir }}"
+    owner: "{{ prometheus_node_exporter_user }}"
+    group: "{{ prometheus_node_exporter_user_group }}" 
+
+- name: "create systemd service unit"
+  template:
+    src: etc/systemd/system/node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+    owner: root
+    group: root
+    mode: 0644
+  when: service_mgr | default(ansible_service_mgr) == 'systemd'
+  #  notify:
+  # - restart node exporter
+
+- name: Looking which version of upstart is install
+  command: initctl version
+  when: service_mgr | default(ansible_service_mgr) == 'upstart'
+  register: upstart_version
+  changed_when: false
+
+- name: "Create init service unit"
+  template:
+    src: etc/init/node_exporter.conf.j2
+    dest: /etc/init/node_exporter.conf
+    owner: root
+    group: root
+    mode: 0644
+  when: service_mgr | default(ansible_service_mgr) == 'upstart'
+
+- name: ensure prometheus node exporter service is enabled and started
+  service:
+    name: node_exporter
+    state: started
+    enabled: yes
